@@ -19,8 +19,8 @@ def main():
     beta = 1.
     lamda = 0.25
     
-    nmodes = 300
-    ntraj = 10000
+    nmodes = 1000
+    ntraj = 5000
 
 
     rho = numpy.zeros((ntimesteps,3,3), dtype=numpy.complex)
@@ -32,13 +32,16 @@ def main():
    
     c_j = omega_j*numpy.sqrt(2*lamda/nmodes)
 
+
+    print 'c_j=', c_j
+
     for n in range(ntraj):
 
-        q_1 = numpy.random.normal(0.0, 1/(numpy.sqrt(beta)*omega_c), nmodes)
+        q_1 = numpy.random.normal(0.0, 1/(numpy.sqrt(beta)*omega_j), nmodes)
 
         Hc1 = numpy.dot(c_j,q_1)
         
-        q_2 = numpy.random.normal(0.0, 1/(numpy.sqrt(beta)*omega_c), nmodes)
+        q_2 = numpy.random.normal(0.0, 1/(numpy.sqrt(beta)*omega_j), nmodes)
 
         Hc2 = numpy.dot(c_j,q_2)
 
@@ -52,7 +55,7 @@ def main():
         
         for t,time in enumerate(times):
             if t == 0:
-                psi_t[0,:] = psi
+                psi_t[0,:] = psi.copy()
             else:
                 psi_t[t,:] = numpy.dot(scipy.linalg.expm(-(1j)*ham*time), psi)
         
@@ -60,15 +63,18 @@ def main():
             for j in range(3):
                 rho[:,i,j] += numpy.conjugate(psi_t[:,i])*psi_t[:,j]
 
-    print rho
+    print rho[0,:,:]
 
     rho /= ntraj
 
-    with open('3state_site_population5.dat', 'w') as f:
+    with open('3state_site_population.dat', 'w') as f:
         for (time,rhot) in zip(times,rho):
             f.write('%0.8f %0.8f %0.8f %0.8f\n'%(time,rhot[0,0].real,rhot[1,1].real,rhot[2,2].real))
+    with open('3state_site_wfn5.dat', 'w') as f:
+        for (time,psi) in zip(times,psi_t):
+            f.write('%0.8f %0.8f\n'%(time,(numpy.conjugate(psi[i])*psi[i]).real))
 
-    print 'Your simulation has completed successfully.'
+    print 'Your simulation has successfully completed.'
 
 if __name__ == '__main__':
     main()
